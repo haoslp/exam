@@ -3,9 +3,10 @@ package com.exam.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
+@RequestMapping("page")
 public class PageController {
 	
 	/**
@@ -20,9 +21,15 @@ public class PageController {
 	 *  3.必须使用@PathVariable注解转化
 	 */
 	
-	@RequestMapping("/page/{moduleName}")
-	public String item_add(@PathVariable String moduleName) {
-		System.out.println("ceshi:"+moduleName);
-		return moduleName;
+	@RequestMapping("/index")
+	@ResponseBody
+	public String commonController() {
+		return "index";
 	}
+	@RequestMapping(value="/{module}/{name}")
+	public String commonController2(@PathVariable String module, @PathVariable String name) {
+		
+		return module+"/"+name;
+	}
+
 }

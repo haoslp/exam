@@ -7,12 +7,17 @@ spring:  datasource:
     url: jdbc:mysql://127.0.0.1:3306/stu_test?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
     username: root
     password: root
+   
   
-  #配置SpringMVC视图解析器
-  mvc:         
-    view:
-      prefix: /WEB-INF/pages/    # /默认代表根目录 src/main/webapp
-      suffix: .html
+#  #配置SpringMVC视图解析器
+#  mvc:         
+#    view:
+#      prefix: /templates/pages/    # /默认代表根目录 src/main/webapp
+#      suffix: .html
+  thymeleaf:
+    mode: HTML 
+    prefix: classpath:/templates
+    suffix: .html
 #SpringBoot整合mybatis-plus 使用时切记模式不同
 mybatis-plus:
    #定义别名包 当程序自动映射时自动拼接
