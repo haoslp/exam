@@ -1,0 +1,178 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<h3 class="box-title">用户管理</h3>
+
+				<div class="box-tools">
+					<div class="input-group input-group-sm" style="width: 350px;">
+						<input type="text" name="table_search" id="searchNameId"
+							class="form-control pull-right" placeholder="用户名">
+
+						<div class="input-group-btn">
+							<button type="button" class="btn btn-default btn-search">
+								<i class="fa fa-search"></i>
+							</button>
+							<button type="button" class="btn btn-default btn-add">添加用户</button>
+							<button type="button" class="btn btn-default btn-update">修改用户</button>
+						
+							
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- /.box-header -->
+			<div class="box-body table-responsive no-padding">
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<!-- <th>选项</th> -->
+							<th>角色ID</th>
+							<th>用户名</th>
+							<!-- <th>用户密码</th>  -->
+							<th>用户真实名字</th>
+							<th>用户状态</th>
+							 
+							<th>操作</th>
+							<!-- <th>创建时间</th>
+							<th>修改时间</th>
+							<th>操作</th> -->
+						</tr>
+					</thead>
+					<tbody id="tbodyId"></tbody>
+				</table>
+			</div>
+			<div id="pageId" class="box-footer clearfix"></div>
+			<!-- /.box-body -->
+		</div>
+		<!-- /.box -->
+	</div>
+</div>
+<script type="text/javascript">
+//btn btn-default btn-valid
+$(document).ready(function(){
+	$("#pageId").load("doPageUI.do",function(){
+		doGetObjects();
+	});
+	$(".input-group-btn")
+	.on("click",".btn-search",doQueryObjects)
+	.on("click",".btn-add,.btn-update",doLoadEditUI);
+	//$("tbody").on("click","btn-valid",doValidById);
+});
+function doLoadEditUI(){
+	var title;
+	if($(this).hasClass("btn-add")){
+		title="用户添加";
+		doLoadPage(title);
+	}else if($(this).hasClass("btn-update")){
+		title="用户修改";
+		var id=doGetCheckedId();
+		console.log("id="+id);
+		if(!id){
+			alert("请先选择！");
+			return;
+		}
+		doFingObjectById(id,title);
+	}
+	/* var url="user/doUserEditUI.do";
+	$("#mainContentId").load(url,function(){
+		$(".box-title").html(title);
+	}); */
+}
+function doFingObjectById(id,title){
+	var params={"id":id};
+	var url="user/doFindObjectById.do";
+	$.getJSON(url,params,function(result){
+		if(result.state==1){
+			$("#mainContentId").data("rowData",result.data);
+			console.log(result.data);
+			doLoadPage(title);
+		}else{
+			alert(result.message);
+		}
+	});
+}
+function doGetCheckedId(){
+	return $("tbody input[name='radioId']:checked").val();
+}
+function doLoadPage(title){
+	var url="user/doUserEditUI.do";
+	$("#mainContentId").load(url,function(){
+		$(".box-title").html(title);
+	});
+}
+function doValidById(btn){
+	var rowData=$(btn).parents("tr").data("rowData");
+	console.log(rowData);
+	var id=rowData.id;
+	var newValid=rowData.valid?0:1;
+	var params={"id":rowData.id,"valid":newValid};
+	var url="user/doValidById.do";
+	var btn=$(this);
+	$.post(url,params,function(result){
+		if(result.state==1){
+			alert(result.message);
+			doGetObjects();
+			//doEditRow(btn,rowData.valid);
+		}else{
+			alert(result.message);
+		}
+	});
+}
+function doEditRow(obj,valid){
+	$(obj).html(valid?"正常":"锁定");
+	var tr=$(obj).parents("tr");
+	tr.find("td:eq(4)").text(valid?"正常":"锁定");
+	var rowData=tr.data("rowData");
+	rowData.valid=valid?0:1;
+	tr.data("rowData",rowData);
+}
+//处理查询按钮的事件
+function doQueryObjects(){
+	$("#pageId").data("pageCurrent",1);
+	doGetObjects();
+}
+
+function doGetObjects(){
+	var url="user/doFindPageObjects.do";
+	var pageCurrent=$("#pageId").data("pageCurrent");
+	if(!pageCurrent)pageCurrent=1;
+	var params={"pageCurrent":pageCurrent}
+	params.userName=$("#searchNameId").val().trim();
+	console.log(params);
+	
+	$.getJSON(url,params,function(result){
+		console.log(result);
+		doHandleResponseResult(result);
+	});
+}
+function doHandleResponseResult(result){
+	if(result.state==1){
+		doSetTableBodyRows(result.data.records);
+		doSetPagination(result.data);
+	}else{
+		alert(result.message);
+	}
+}
+function doSetTableBodyRows(data){
+	var tBody=$("#tbodyId");
+	tBody.empty();
+	for(var i in data){
+		var tr=$("<tr></tr>");
+		tr.data("rowData",data[i]);
+		var tds=doCreateTds(data[i]);
+		tr.append(tds);
+		tBody.append(tr);
+	}
+}
+function doCreateTds(data){
+	   //console.log(row);
+	   var tds="<td><input type='radio' name='radioId' value='"+data.id+"' ></td>"+
+	  /*  "<td>"+data.id+"</td>"+ */
+	     "<td>"+data.userName+"</td>"+
+	     "<td>"+data.userTrueName+"</td>"+
+	     "<td>"+(data.valid?"正常":"锁定")+"</td>"+
+	     "<td><button type='button' class='btn btn-default btn-valid' onclick='doValidById(this)'>"+(data.valid?"锁定":"正常")+"</button></td>"; 
+    return tds;
+}
+</script>

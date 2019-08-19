@@ -1,0 +1,218 @@
+
+<!-- Horizontal Form -->
+<div class="box box-info">
+	<div class="box-header with-border">
+		<h3 class="box-title">添加试题</h3>
+	</div>
+	<!-- /.box-header -->
+	<!-- form start -->
+	<form class="form-horizontal">
+		<div class="box-body">
+			<div class="form-group">
+				<label for="title" class="col-sm-2 control-label">题干</label>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" id="title" onblur="Title()">
+				</div>
+			</div>
+			<div class="form-group" id="pwdDiv">
+				<label for="selectA" class="col-sm-2 control-label">A选项内容</label>
+
+				<div class="col-sm-10">
+					<input type="test" class="form-control" id="selectA" onblur="SelectA()">
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="selectB" class="col-sm-2 control-label">B选项内容</label>
+				<div class="col-sm-10">
+					<input type="text" class="form-control " id="selectB" onblur="SelectB()">
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="selectC" class="col-sm-2 control-label">C选项内容</label>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" id="selectC" onblur="SelectC()">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="selectD" class="col-sm-2 control-label">D选项内容</label>
+				<div class="col-sm-10">
+					<input type="text" class="form-control" id="selectD" onblur="SelectD()">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="answer" class="col-sm-2 control-label">标准答案选项</label>
+				<div class="col-sm-10" id="rolesId">
+					<input type="text" class="form-control" id="answer" onblur="AA()"/>
+				</div>
+			</div>
+		</div>
+		<!-- /.box-body -->
+		<div class="box-footer">
+			<button type="button" class="btn btn-default btn-cancel">Cancel</button>
+			<button type="button" class="btn btn-info pull-right btn-save">Save</button>
+		</div>
+		<!-- /.box-footer -->
+	</form>
+	<div class="layui-layer layui-layer-page layui-layer-molv layer-anim"
+		id="treeLayer" type="page" times="2" showtime="0" contype="object"
+		style="z-index: 59891016; width: 300px; height: 450px; top: 100px; left: 500px; display: none">
+		<div class="layui-layer-title" style="cursor: move;">选择部门</div>
+		<div class="layui-layer-content" style="height: 358px;">
+			<div style="padding: 10px;" class="layui-layer-wrap">
+				<ul id="zTreeId" class="ztree"></ul>
+				<!-- 动态加载树 -->
+			</div>
+		</div>
+		<span class="layui-layer-setwin"> <a
+			class="layui-layer-ico layui-layer-close layui-layer-close1 btn-cancel"></a></span>
+		<div class="layui-layer-btn layui-layer-btn-">
+			<a class="layui-layer-btn0 btn-confirm">确定</a> <a
+				class="layui-layer-btn1 btn-cancel">取消</a>
+		</div>
+	</div>
+</div>
+<script type="text/javascript"
+	src="bower_components/ztree/jquery.ztree.all.min.js"></script>
+<script type="text/javascript" src="bower_components/layer/layer.js"></script>
+<script type="text/javascript">
+$(document).ready(
+	function() {
+		//页面加载完成以后加载角色信息并初始化页面
+		doInitFormData();
+		//事件注册
+		$(".box-footer")
+			.on("click", ".btn-cancel", doCancel)
+			.on("click", ".btn-save", doSaveOrUpdate);
+		});
+	function doCancel() {
+		$("#mainContentId").removeData("rowData");
+		$("#mainContentId").load("question/doQuestionListUI.do");
+	}
+	function doSaveOrUpdate() {
+		debugger
+		var rowData=$("#mainContentId").data("rowData");
+		//1.获取表单数据
+		var params=doGetEditFormData();
+		if(rowData)params.id=rowData.id;
+		var insertUrl="question/doInsertQuestion.do";
+		var updateUrl="question/doUpdateQuestion.do";
+		var url=rowData?updateUrl:insertUrl;
+		//3.发起异步请求
+		$.post(url,params,function(result){
+			if(result.state==1){
+				alert(result.message);
+				doCancel();
+			}else{
+				alert(result.message);
+			}
+		})
+	}
+	 function doGetEditFormData() {
+		//获取用户输入的数据
+		//debugger
+		var params = {
+			title : $("#title").val(),
+			selectA : $("#selectA").val(),
+			selectB : $("#selectB").val(),
+			selectC : $("#selectC").val(),
+			selectD : $("#selectD").val(),
+			answer : $("#answer").val(),
+		}
+		return params;
+	}
+	  function doLoadQuestions(){
+		 debugger
+		 var url="question/doQuestionEditUI.do"
+		 //var data=$("#mainContentId").data("rowData");
+		 $.getJSON(url,function(result){
+			 if(result.state==1){
+			  doInitPageRoles(result.data);
+			  doInitFormData();//修改时
+			 }else{
+			  alert(result.message);
+			 }
+		 })
+	 } 
+	 function doInitFormData(){
+		 //debugger
+	     var data=$("#mainContentId").data("rowData");
+	     if(!data)return;
+	     //$("#pwdDiv").remove();
+		 //初始化试题信息 
+		 $("#title").val(data.title);
+		 $("#selectA").val(data.selectA);
+		 $("#selectB").val(data.selectB);
+		 $("#selectC").val(data.selectC);
+		 $("#selectD").val(data.selectD);
+		 $("#answer").val(data.answer);
+		 /* //初始化用户角色信息
+		 var ids=data.roleIds;
+		 for(var i in ids){
+		  $("#rolesId input[value='"+ids[i]+"']")
+		  .prop("checked",true);
+		 } */
+	 }
+	 function AA() {
+		var as= $("#answer").val();
+		/* var str ='ABCD'; */
+		//alert("as==>  "+as)
+		if (as=='A') {
+			//alert("在范围内")
+		}else if(as=='B'){
+			//alert("在范围内")
+		}else if(as=='C'){
+			//alert("在范围内")
+		}else if(as=='D'){
+			//alert("在范围内")
+		}
+		else{
+			alert("答案类型只能为ABCD中的一个,请重新输入");
+			 $("#answer").val('');
+			// $("#answer").focus();
+		}
+		
+	}
+	 function Title(){
+		 var tit=$("#title").val();
+		 if(tit.length>2000){
+			 alert("长度太长,请重新输入");
+			 $("#title").val("");
+		 }
+	 }
+	 function SelectA(){
+		 var tit=$("#selectA").val();
+		 if(tit.length>1000){
+			 alert("A选项内容太长,请重新输入");
+			 $("#selectA").val("");
+		 }
+	 }
+	 function SelectB(){
+		 var tit=$("#selectB").val();
+		 if(tit.length>1000){
+			 alert("B选项内容太长,请重新输入");
+			 $("#selectB").val("");
+		 }
+	 }
+	 function SelectC(){
+		 var tit=$("#selectC").val();
+		 if(tit.length>1000){
+			 alert("C选项内容太长,请重新输入");
+			 $("#selectC").val("");
+		 }
+	 } 
+	function SelectD(){
+		 var tit=$("#selectD").val();
+		 if(tit.length>1000){
+			 alert("D选项内容太长,请重新输入");
+			 $("#selectD").val("");
+		 }
+	 } 
+</script>
+
+
+
+
+
+
